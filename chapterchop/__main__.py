@@ -6,12 +6,9 @@ import sys
 from .core import *
 
 def main():
-    if not test_ffmpeg():
-        sys.exit("FFmpeg test failed! Please install or bundle ffmpeg properly.")
 
-    # Proceed with rest of your app
-    print("FFmpeg test passed. Running audio processing...")
-    # call your core processing functions here...
+    audio_file = r"examples\3.mp3"
+    test_gap_detection(audio_file, min_gap_seconds=2.0)
 
 if __name__ == "__main__":
     main()

@@ -10,3 +10,6 @@ __pycache__/
 *.log
 .env
 .venv/
+
+#ignore test files
+*.mp3
