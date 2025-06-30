@@ -13,3 +13,4 @@ __pycache__/
 
 #ignore test files
 *.mp3
+*.json

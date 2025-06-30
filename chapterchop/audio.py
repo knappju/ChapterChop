@@ -30,8 +30,7 @@ def load_audio(path, target_sr=16000):
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         tmp_path = tmp.name
 
-    base_dir = os.path.dirname(__file__)
-    ffmpeg_path = os.path.join(base_dir, ".." ,"third_party", "ffmpeg", "win64", "ffmpeg.exe")
+    ffmpeg_path = get_ffmpeg_path()
 
     ffmpeg_cmd = [
         ffmpeg_path,
@@ -42,8 +41,6 @@ def load_audio(path, target_sr=16000):
         "-y",
         tmp_path
     ]
-
-    print(f"{ffmpeg_cmd}")
 
     try:
         logger.info(f"Running ffmpeg to convert: {path}")
@@ -70,7 +67,7 @@ Args:
 Returns:
     list of tuples: [(start_time, end_time), ...] for each silent gap.
 """
-def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.02):
+def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.3):
 
     frame_len = int(0.1 * sr)  # 100ms frames
     hop_len = frame_len // 2
@@ -100,6 +97,52 @@ def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.02):
             gaps.append((start, end))
 
     return gaps
+
+
+"""
+Save audio clips around each gap to a temporary directory and optionally build a metadata list.
+Args:
+    gaps (list of tuples): List of (gap_start, gap_end) in seconds.
+    y (np.ndarray): Full audio time series.
+    sr (int): Sample rate of the audio.
+    before_sec (float): Seconds before the gap to include.
+    after_sec (float): Seconds after the gap to include.
+    metadata_list (list, optional): A list to store JSON-friendly metadata about each gap clip.
+Returns:
+    str: Path to the temporary directory containing saved WAV clips.
+    list of str: List of saved .wav file paths.
+"""
+def save_gap_clips_to_tempdir(
+    gaps, y, sr, before_sec=2.0, after_sec=2.0, metadata_list=None
+):
+    temp_dir = tempfile.mkdtemp(prefix="chapterchop_gaps_")
+    saved_paths = []
+    duration = len(y) / sr
+
+    for idx, (gap_start, gap_end) in enumerate(gaps, 1):
+        clip_start = max(0, gap_start - before_sec)
+        clip_end = min(duration, gap_end + after_sec)
+
+        start_sample = int(clip_start * sr)
+        end_sample = int(clip_end * sr)
+        clip_audio = y[start_sample:end_sample]
+
+        filename = f"Gap_{idx}_{int(clip_start * 1000)}ms_{int(clip_end * 1000)}ms.wav"
+        file_path = os.path.join(temp_dir, filename)
+        sf.write(file_path, clip_audio, sr)
+        saved_paths.append(file_path)
+
+        # Add metadata entry if a list is provided
+        if metadata_list is not None:
+            metadata_list.append({
+                "file": filename,
+                "start": round(clip_start, 3),
+                "gap_start": round(gap_start, 3),
+                "gap_end": round(gap_end, 3),
+                "end": round(clip_end, 3)
+            })
+
+    return temp_dir, saved_paths
 
 def get_ffmpeg_path():
     base_dir = os.path.dirname(__file__)
