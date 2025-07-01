@@ -76,7 +76,10 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         if i == 0:
             start_time = 0
             end_time = segment["gap_start"] + 1.0
-            print()
+            output_path = f"examples/{i+9}.mp3"
+            audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
+            start_time = segment["gap_end"] - 1.0
+            end_time = filtered_segments[i + 1]["gap_start"] + 1.0
         elif i == total_segments - 1:
             start_time = segment["gap_end"] - 1.0
             end_time = audio.get_audio_duration(audio_path)
