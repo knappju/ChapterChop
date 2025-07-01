@@ -129,6 +129,30 @@ def extract_buffered_segment(y, sr, gap_start, gap_end, buffer_before=2.0, buffe
     segment = y[start_sample:end_sample]
     return segment, sr
 
+def get_audio_duration(path):
+    """Get audio duration in seconds using ffprobe."""
+    cmd = [
+        "ffprobe", "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "json", path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    duration = float(json.loads(result.stdout)["format"]["duration"])
+    return duration
+
+def trim_audio_ffmpeg(input_path, output_path, start_time, end_time):
+    ffmpeg_path = get_ffmpeg_path()
+    
+    cmd = [
+        ffmpeg_path,
+        "-i", input_path,
+        "-ss", start_time,
+        "-to", end_time,
+        "-c", "copy",
+        output_path
+    ]
+    subprocess.run(cmd, check=True)
+
 def get_ffmpeg_path():
     base_dir = os.path.dirname(__file__)
     # Adjust path to where you bundle ffmpeg inside your repo

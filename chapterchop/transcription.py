@@ -2,7 +2,7 @@ import whisper
 import numpy as np
 
 # Load the Whisper model once, globally
-model = whisper.load_model("base")  # You can change to "small", "medium", etc. if needed
+model = whisper.load_model("medium")  # You can change to "small", "medium", etc. if needed
 
 """
 Transcribe the audio before and after a gap and combine the results with a '...' in the middle.

@@ -52,6 +52,7 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         })
 
     total = len(segments)
+    filtered_segments = []
 
     for i, seg in enumerate(segments, 1):
         print(f"Transcribing segment {i} of {total}...")
@@ -59,10 +60,39 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         transcript, confidence = transcription.transcribe_segment(seg)
         seg["transcript"] = transcript
         seg["confidence"] = round(confidence, 3)
-    
-    output_json_path = os.path.join(".", "segments.json")
-    save_segments_to_json(segments, output_json_path)
         
+        if "chapter" in transcript.lower():
+            filtered_segments.append(seg)
+    
+    output_json_path = os.path.join(".", "Segments.json")
+    save_segments_to_json(segments, output_json_path)
+
+    output_json_path = os.path.join(".", "FilteredSegments.json")
+    save_segments_to_json(filtered_segments, output_json_path)
+
+    total_segments = len(filtered_segments)
+
+    for i, segment in enumerate(filtered_segments):
+        if i == 0:
+            start_time = 0
+            end_time = segment["gap_start"] + 1.0
+            print()
+        elif i == total_segments - 1:
+            start_time = segment["gap_end"] - 1.0
+            end_time = 9196.2#unsure how to calc this
+        else:
+            start_time = segment["gap_end"] - 1.0
+            end_time = filtered_segments[i + 1]["gap_start"] + 1.0
+
+        output_path = f"examples/{i+10}.mp3"
+        audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
+        
+def seconds_to_timestamp(seconds):
+    """Convert float seconds to HH:MM:SS.mmm format."""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = seconds % 60
+    return f"{hours:02}:{minutes:02}:{secs:06.3f}"
 
 def save_segments_to_json(segments, output_path):
     # Prepare clean, serializable segment data
