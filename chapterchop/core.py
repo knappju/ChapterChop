@@ -64,10 +64,10 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         if "chapter" in transcript.lower():
             filtered_segments.append(seg)
     
-    output_json_path = os.path.join(".", "Segments.json")
+    output_json_path = os.path.join("./examples", "Segments.json")
     save_segments_to_json(segments, output_json_path)
 
-    output_json_path = os.path.join(".", "FilteredSegments.json")
+    output_json_path = os.path.join("./examples", "FilteredSegments.json")
     save_segments_to_json(filtered_segments, output_json_path)
 
     total_segments = len(filtered_segments)
