@@ -30,32 +30,27 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         silence_threshold=silence_threshold
     )
     print(f"Found {len(gaps)} gap(s)")
-
-    print("Saving clips around gaps...")
-    metadata = []
-    temp_dir, saved_paths = audio.save_clips_to_tempdir(
-        gaps, y, sr,
-        before_sec=buffer_before,
-        after_sec=buffer_after,
-        metadata_list=metadata
-    )
-
-    print(f"Saved {len(saved_paths)} clips to: {temp_dir}")
     
-    return {
-        "clips_dir": temp_dir,
-        "metadata": metadata
-    }
+    segments = []
 
+    for i, (gap_start, gap_end) in enumerate(gaps, 1):
+        # create a local copy of the desired gap areas.
+        segment, seg_sr = audio.extract_buffered_segment(
+            y, sr,
+            gap_start=gap_start,
+            gap_end=gap_end,
+            buffer_before=2.0,
+            buffer_after=2.0
+        )
+        # Add to the list
+        segments.append({
+            "index": i,
+            "gap_start": gap_start,
+            "gap_end": gap_end,
+            "buffered_segment": segment,
+            "sample_rate": seg_sr
+        })
 
-def save_metadata(metadata, output_path="gaps_metadata.json"):
-    """
-    Save the metadata JSON to a file.
+    print(f"Extracted {len(segments)} total segments.")
+        
 
-    Args:
-        metadata (list): List of metadata dicts.
-        output_path (str): Path to the output JSON file.
-    """
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, indent=4, ensure_ascii=False)
-    print(f"Metadata saved to: {output_path}")

@@ -3,10 +3,7 @@ import subprocess
 import soundfile as sf
 import numpy as np
 import tempfile
-import logging
 import librosa
-
-logger = logging.getLogger(__name__)
 
 """
     Load any audio file using ffmpeg (mp3, wav, m4b, etc.).
@@ -43,7 +40,6 @@ def load_audio(path, target_sr=44100):
     ]
 
     try:
-        logger.info(f"Running ffmpeg to convert: {path}")
         subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         y, sr = sf.read(tmp_path)
@@ -98,49 +94,40 @@ def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.3):
 
     return gaps
 
-
 """
-Save audio clips around each gap to a temporary directory and optionally build a metadata list.
-Args:
-    gaps (list of tuples): List of (gap_start, gap_end) in seconds.
-    y (np.ndarray): Full audio time series.
-    sr (int): Sample rate of the audio.
-    before_sec (float): Seconds before the gap to include.
-    after_sec (float): Seconds after the gap to include.
-    metadata_list (list, optional): A list to store JSON-friendly metadata about each gap clip.
-Returns:
-    str: Path to the temporary directory containing saved WAV clips.
-    list of str: List of saved .wav file paths.
+Extract a segment of audio from y that includes time before and after a given gap.
+Parameters
+----------
+y : np.ndarray
+    Full audio time series.
+sr : int
+    Sample rate of the audio.
+gap_start : float
+    Start time of the detected gap (in seconds).
+gap_end : float
+    End time of the detected gap (in seconds).
+buffer_before : float, optional
+    Duration before the gap to include (in seconds). Default is 2.0.
+buffer_after : float, optional
+    Duration after the gap to include (in seconds). Default is 2.0.
+Returns
+-------
+segment : np.ndarray
+    The audio segment with the buffer applied.
+sr : int
+    The sample rate of the audio (same as input).
 """
-def save_clips_to_tempdir( gaps, y, sr, before_sec=2.0, after_sec=2.0, metadata_list=None ):
-    temp_dir = tempfile.mkdtemp(prefix="chapterchop_gaps_")
-    saved_paths = []
-    duration = len(y) / sr
+def extract_buffered_segment(y, sr, gap_start, gap_end, buffer_before=2.0, buffer_after=2.0):
 
-    for idx, (gap_start, gap_end) in enumerate(gaps, 1):
-        clip_start = max(0, gap_start - before_sec)
-        clip_end = min(duration, gap_end + after_sec)
+    total_duration = len(y) / sr
+    clip_start = max(0, gap_start - buffer_before)
+    clip_end = min(total_duration, gap_end + buffer_after)
 
-        start_sample = int(clip_start * sr)
-        end_sample = int(clip_end * sr)
-        clip_audio = y[start_sample:end_sample]
+    start_sample = int(clip_start * sr)
+    end_sample = int(clip_end * sr)
 
-        filename = f"Gap_{idx}.wav"
-        file_path = os.path.join(temp_dir, filename)
-        sf.write(file_path, clip_audio, sr)
-        saved_paths.append(file_path)
-
-        # Add metadata entry if a list is provided
-        if metadata_list is not None:
-            metadata_list.append({
-                "file": filename,
-                "start": round(clip_start, 3),
-                "gap_start": round(gap_start, 3),
-                "gap_end": round(gap_end, 3),
-                "end": round(clip_end, 3)
-            })
-
-    return temp_dir, saved_paths
+    segment = y[start_sample:end_sample]
+    return segment, sr
 
 def get_ffmpeg_path():
     base_dir = os.path.dirname(__file__)
