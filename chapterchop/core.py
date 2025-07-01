@@ -33,7 +33,7 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
 
     print("Saving clips around gaps...")
     metadata = []
-    temp_dir, saved_paths = audio.save_gap_clips_to_tempdir(
+    temp_dir, saved_paths = audio.save_clips_to_tempdir(
         gaps, y, sr,
         before_sec=buffer_before,
         after_sec=buffer_after,

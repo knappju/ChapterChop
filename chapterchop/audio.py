@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
     Raises:
         RuntimeError: If ffmpeg fails or the audio can't be read.
 """
-def load_audio(path, target_sr=16000):
+def load_audio(path, target_sr=44100):
     
     if not os.path.exists(path):
         raise FileNotFoundError(f"Audio file does not exist: {path}")
@@ -112,9 +112,7 @@ Returns:
     str: Path to the temporary directory containing saved WAV clips.
     list of str: List of saved .wav file paths.
 """
-def save_gap_clips_to_tempdir(
-    gaps, y, sr, before_sec=2.0, after_sec=2.0, metadata_list=None
-):
+def save_clips_to_tempdir( gaps, y, sr, before_sec=2.0, after_sec=2.0, metadata_list=None ):
     temp_dir = tempfile.mkdtemp(prefix="chapterchop_gaps_")
     saved_paths = []
     duration = len(y) / sr
@@ -127,7 +125,7 @@ def save_gap_clips_to_tempdir(
         end_sample = int(clip_end * sr)
         clip_audio = y[start_sample:end_sample]
 
-        filename = f"Gap_{idx}_{int(clip_start * 1000)}ms_{int(clip_end * 1000)}ms.wav"
+        filename = f"Gap_{idx}.wav"
         file_path = os.path.join(temp_dir, filename)
         sf.write(file_path, clip_audio, sr)
         saved_paths.append(file_path)
