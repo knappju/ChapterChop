@@ -79,7 +79,7 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
             print()
         elif i == total_segments - 1:
             start_time = segment["gap_end"] - 1.0
-            end_time = 9196.2#unsure how to calc this
+            end_time = audio.get_audio_duration(audio_path)
         else:
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0

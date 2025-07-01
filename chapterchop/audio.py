@@ -4,6 +4,7 @@ import soundfile as sf
 import numpy as np
 import tempfile
 import librosa
+import json
 
 """
     Load any audio file using ffmpeg (mp3, wav, m4b, etc.).
@@ -130,15 +131,15 @@ def extract_buffered_segment(y, sr, gap_start, gap_end, buffer_before=2.0, buffe
     return segment, sr
 
 def get_audio_duration(path):
-    """Get audio duration in seconds using ffprobe."""
-    cmd = [
-        "ffprobe", "-v", "error",
-        "-show_entries", "format=duration",
-        "-of", "json", path
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    duration = float(json.loads(result.stdout)["format"]["duration"])
-    return duration
+    base_dir = os.path.dirname(__file__)
+    ffprobe_path = os.path.join(base_dir, ".." ,"third_party", "ffmpeg", "win64", "ffprobe.exe")
+    result = subprocess.run(
+        [ffprobe_path, "-v", "error", "-show_entries",
+         "format=duration", "-of", "json", path],
+        capture_output=True, text=True
+    )
+    output = json.loads(result.stdout)
+    return float(output["format"]["duration"])
 
 def trim_audio_ffmpeg(input_path, output_path, start_time, end_time):
     ffmpeg_path = get_ffmpeg_path()
