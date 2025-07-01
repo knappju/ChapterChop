@@ -1,10 +1,10 @@
 """
 Core logic of ChapterChop.
 """
-import os
-import subprocess
 from . import audio
+from . import transcription
 import json
+import os
 
 """
 Orchestrates the full gap detection and clip saving process.
@@ -51,6 +51,33 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
             "sample_rate": seg_sr
         })
 
-    print(f"Extracted {len(segments)} total segments.")
+    total = len(segments)
+
+    for i, seg in enumerate(segments, 1):
+        print(f"Transcribing segment {i} of {total}...")
+
+        transcript, confidence = transcription.transcribe_segment(seg)
+        seg["transcript"] = transcript
+        seg["confidence"] = round(confidence, 3)
+    
+    output_json_path = os.path.join(".", "segments.json")
+    save_segments_to_json(segments, output_json_path)
         
 
+def save_segments_to_json(segments, output_path):
+    # Prepare clean, serializable segment data
+    serializable_segments = []
+    for seg in segments:
+        serializable_segments.append({
+            "index": seg.get("index"),
+            "gap_start": round(seg.get("gap_start", 0), 3),
+            "gap_end": round(seg.get("gap_end", 0), 3),
+            "transcript": seg.get("transcript", ""),
+            "confidence": seg.get("confidence", None)
+        })
+
+    # Write to file
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(serializable_segments, f, indent=4, ensure_ascii=False)
+
+    print(f"Segments saved to JSON: {output_path}")

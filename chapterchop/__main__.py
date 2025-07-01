@@ -7,7 +7,7 @@ from .core import *
 
 def main():
 
-    audio_file = r"examples\3.mp3"
+    audio_file = r"examples\RAW-st340.mp3"
     result = process_audio_file(audio_file)
 
 if __name__ == "__main__":

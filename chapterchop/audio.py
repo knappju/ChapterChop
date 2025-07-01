@@ -19,7 +19,7 @@ import librosa
     Raises:
         RuntimeError: If ffmpeg fails or the audio can't be read.
 """
-def load_audio(path, target_sr=44100):
+def load_audio(path, target_sr=16000):
     
     if not os.path.exists(path):
         raise FileNotFoundError(f"Audio file does not exist: {path}")
