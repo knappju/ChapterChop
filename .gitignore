@@ -13,6 +13,3 @@ __pycache__/
 
 #ignore third_party
 third_party/
-
-#ignore virtual environment
-venv/
