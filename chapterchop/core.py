@@ -18,7 +18,7 @@ Args:
 Returns:
     dict: A dictionary containing the output directory and metadata list.
 """
-def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buffer_before=2.0, buffer_after=2.0):
+def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, min_gap_sec=3.0, buffer_before=2.0, buffer_after=2.0):
 
     print(f"Loading audio: {audio_path}")
     y, sr = audio.load_audio(audio_path)
@@ -64,10 +64,18 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         if "chapter" in transcript.lower():
             filtered_segments.append(seg)
     
-    output_json_path = os.path.join("./examples", "Segments.json")
+    #use the current working directory if an output folder is not provided
+    output_folder = os.getcwd() if output_folder is None else output_folder
+
+    #create the output folder if it does not exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    output_json_path = os.path.join(output_folder, "Segments.json")
     save_segments_to_json(segments, output_json_path)
 
-    output_json_path = os.path.join("./examples", "FilteredSegments.json")
+    output_json_path = os.path.join(output_folder, "FilteredSegments.json")
+
     save_segments_to_json(filtered_segments, output_json_path)
 
     total_segments = len(filtered_segments)
@@ -76,7 +84,7 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
         if i == 0:
             start_time = 0
             end_time = segment["gap_start"] + 1.0
-            output_path = f"examples/{i+9}.mp3"
+            output_path = os.path.join(output_folder, f"{i+9}.mp3")
             audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0
@@ -87,7 +95,7 @@ def process_audio_file(audio_path, silence_threshold=0.05, min_gap_sec=3.0, buff
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0
 
-        output_path = f"examples/{i+10}.mp3"
+        output_path = os.path.join(output_folder, f"{i+10}.mp3")
         audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
         
 def seconds_to_timestamp(seconds):
@@ -113,4 +121,4 @@ def save_segments_to_json(segments, output_path):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(serializable_segments, f, indent=4, ensure_ascii=False)
 
-    print(f"Segments saved to JSON: {output_path}")
+    print(f"Segments JSON saved to: {output_path}")
