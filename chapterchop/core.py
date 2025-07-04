@@ -75,6 +75,7 @@ def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, m
     save_segments_to_json(segments, output_json_path)
 
     output_json_path = os.path.join(output_folder, "FilteredSegments.json")
+
     save_segments_to_json(filtered_segments, output_json_path)
 
     total_segments = len(filtered_segments)
