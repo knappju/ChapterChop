@@ -120,4 +120,4 @@ def save_segments_to_json(segments, output_path):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(serializable_segments, f, indent=4, ensure_ascii=False)
 
-    print(f"Segments saved to JSON: {output_path}")
+    print(f"Segments JSON saved to: {output_path}")
