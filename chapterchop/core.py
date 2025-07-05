@@ -95,8 +95,15 @@ def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, m
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0
 
+        #create metadata list here
+        metadata = [
+            '-metadata', f'start_time={seconds_to_timestamp(start_time)}',
+            '-metadata', f'end_time={seconds_to_timestamp(end_time)}',
+            '-metadata', f'Chapter={transcription.extract_chapter_number(segment['transcript'])}'
+        ]
+
         output_path = os.path.join(output_folder, f"{i+10}.mp3")
-        audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
+        audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time), metadata)
         
 def seconds_to_timestamp(seconds):
     """Convert float seconds to HH:MM:SS.mmm format."""

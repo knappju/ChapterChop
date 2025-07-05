@@ -141,7 +141,7 @@ def get_audio_duration(path):
     output = json.loads(result.stdout)
     return float(output["format"]["duration"])
 
-def trim_audio_ffmpeg(input_path, output_path, start_time, end_time):
+def trim_audio_ffmpeg(input_path, output_path, start_time, end_time, metadata):
     ffmpeg_path = get_ffmpeg_path()
     
     cmd = [
@@ -150,6 +150,7 @@ def trim_audio_ffmpeg(input_path, output_path, start_time, end_time):
         "-ss", start_time,
         "-to", end_time,
         "-c", "copy",
+        *metadata,
         output_path
     ]
     subprocess.run(cmd, check=True)
