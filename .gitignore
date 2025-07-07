@@ -1,3 +1,7 @@
+# Ignore output directory and files
+gaps/
+gaps.json
+
 # Ignore other common Python artifacts
 __pycache__/
 *.pyc
@@ -11,5 +15,5 @@ __pycache__/
 *.mp3
 *.json
 
-#ignore third_party
-third_party/
+#ignore virtual environment
+/venv

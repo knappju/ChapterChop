@@ -14,7 +14,7 @@ ChapterChop is a Python-based tool for detecting silent gaps in audiobook files 
 - 🧠 Transcribes surrounding segments using OpenAI Whisper
 - 📊 Outputs structured `.json` metadata with timestamps and confidence scores
 - 🔍 Filters segments containing the word **"chapter"** to identify potential chapter breaks
-- ⚙️ Cross-platform compatible (Windows/Linux/macOS with Python 3.8+)
+- ⚙️ Cross-platform compatible (Windows/Linux/macOS with Python 3.13)
 
 ---
 
