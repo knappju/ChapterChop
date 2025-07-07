@@ -4,19 +4,19 @@ import numpy as np
 # Load the Whisper model once, globally
 model = whisper.load_model("medium")  # You can change to "small", "medium", etc. if needed
 
-"""
-Transcribe the audio before and after a gap and combine the results with a '...' in the middle.
-Args:
-    segment (dict): A segment dictionary containing:
-        - "buffered_segment": np.ndarray
-        - "sample_rate": int
-        - "gap_start": float
-        - "gap_end": float
-        - "start": float (optional, required if you want precise gap offsets)
-Returns:
-    tuple: (transcript: str, confidence: float)
-"""
 def transcribe_segment(segment):
+    """
+    Transcribe the audio before and after a gap and combine the results with a '...' in the middle.
+    Args:
+        segment (dict): A segment dictionary containing:
+            - "buffered_segment": np.ndarray
+            - "sample_rate": int
+            - "gap_start": float
+            - "gap_end": float
+            - "start": float (optional, required if you want precise gap offsets)
+    Returns:
+        tuple: (transcript: str, confidence: float)
+    """
     audio = segment["buffered_segment"]
     sr = segment["sample_rate"]
     gap_start = segment["gap_start"]
@@ -55,11 +55,10 @@ def transcribe_segment(segment):
 
     return transcript, confidence
 
-
-"""
-Calculate average confidence from Whisper segments.
-"""
 def _get_avg_confidence(segments):
+    """
+    Calculate average confidence from Whisper segments.
+    """
     if not segments:
         return 0.0
     logprobs = [seg["avg_logprob"] for seg in segments if "avg_logprob" in seg]

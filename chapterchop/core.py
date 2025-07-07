@@ -6,20 +6,20 @@ from . import transcription
 import json
 import os
 
-"""
-Orchestrates the full gap detection and clip saving process.
 
-Args:
-    audio_path (str): Path to the input audio file (.mp3, .wav, .m4b).
-    silence_threshold (float): Volume threshold to consider as silence.
-    min_gap_sec (float): Minimum duration of silence to be considered a gap.
-    buffer_before (float): Seconds before each gap to include in the clip.
-    buffer_after (float): Seconds after each gap to include in the clip.
-Returns:
-    dict: A dictionary containing the output directory and metadata list.
-"""
 def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, min_gap_sec=3.0, buffer_before=2.0, buffer_after=2.0):
-
+    """
+    Orchestrates the full gap detection and clip saving process.
+    
+    Args:
+        audio_path (str): Path to the input audio file (.mp3, .wav, .m4b).
+        silence_threshold (float): Volume threshold to consider as silence.
+        min_gap_sec (float): Minimum duration of silence to be considered a gap.
+        buffer_before (float): Seconds before each gap to include in the clip.
+        buffer_after (float): Seconds after each gap to include in the clip.
+    Returns:
+        dict: A dictionary containing the output directory and metadata list.
+    """
     print(f"Loading audio: {audio_path}")
     y, sr = audio.load_audio(audio_path)
 
