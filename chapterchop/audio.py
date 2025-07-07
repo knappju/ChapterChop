@@ -6,21 +6,22 @@ import tempfile
 import librosa
 import json
 
-"""
+
+def load_audio(path, target_sr=16000):
+    """
     Load any audio file using ffmpeg (mp3, wav, m4b, etc.).
     Converts to mono WAV and loads it with soundfile.
-    
+
     Args:
         path (str): Path to the input audio file.
         target_sr (int): Sample rate to resample to (default: 16000).
-    
+
     Returns:
         tuple: (y, sr) where y is the audio time series (np.ndarray) and sr is the sample rate.
-    
+
     Raises:
         RuntimeError: If ffmpeg fails or the audio can't be read.
-"""
-def load_audio(path, target_sr=16000):
+    """
     
     if not os.path.exists(path):
         raise FileNotFoundError(f"Audio file does not exist: {path}")
@@ -54,17 +55,18 @@ def load_audio(path, target_sr=16000):
         if os.path.exists(tmp_path):
             os.remove(tmp_path)
 
-"""
-Detect periods of silence longer than a given duration.
-Args:
-    y (np.ndarray): Audio time series (mono).
-    sr (int): Sample rate of the audio.
-    min_gap_seconds (float): Minimum duration of silence to count as a gap.
-    silence_threshold (float): RMS threshold below which audio is considered silent.
-Returns:
-    list of tuples: [(start_time, end_time), ...] for each silent gap.
-"""
+
 def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.3):
+    """
+    Detect periods of silence longer than a given duration.
+    Args:
+        y (np.ndarray): Audio time series (mono).
+        sr (int): Sample rate of the audio.
+        min_gap_seconds (float): Minimum duration of silence to count as a gap.
+        silence_threshold (float): RMS threshold below which audio is considered silent.
+    Returns:
+        list of tuples: [(start_time, end_time), ...] for each silent gap.
+    """
 
     frame_len = int(0.1 * sr)  # 100ms frames
     hop_len = frame_len // 2
@@ -95,30 +97,30 @@ def detect_silence_gaps(y, sr, min_gap_seconds=2.0, silence_threshold=0.3):
 
     return gaps
 
-"""
-Extract a segment of audio from y that includes time before and after a given gap.
-Parameters
-----------
-y : np.ndarray
-    Full audio time series.
-sr : int
-    Sample rate of the audio.
-gap_start : float
-    Start time of the detected gap (in seconds).
-gap_end : float
-    End time of the detected gap (in seconds).
-buffer_before : float, optional
-    Duration before the gap to include (in seconds). Default is 2.0.
-buffer_after : float, optional
-    Duration after the gap to include (in seconds). Default is 2.0.
-Returns
--------
-segment : np.ndarray
-    The audio segment with the buffer applied.
-sr : int
-    The sample rate of the audio (same as input).
-"""
 def extract_buffered_segment(y, sr, gap_start, gap_end, buffer_before=2.0, buffer_after=2.0):
+    """
+    Extract a segment of audio from y that includes time before and after a given gap.
+    Parameters
+    ----------
+    y : np.ndarray
+        Full audio time series.
+    sr : int
+        Sample rate of the audio.
+    gap_start : float
+        Start time of the detected gap (in seconds).
+    gap_end : float
+        End time of the detected gap (in seconds).
+    buffer_before : float, optional
+        Duration before the gap to include (in seconds). Default is 2.0.
+    buffer_after : float, optional
+        Duration after the gap to include (in seconds). Default is 2.0.
+    Returns
+    -------
+    segment : np.ndarray
+        The audio segment with the buffer applied.
+    sr : int
+        The sample rate of the audio (same as input).
+    """
 
     total_duration = len(y) / sr
     clip_start = max(0, gap_start - buffer_before)
@@ -131,6 +133,21 @@ def extract_buffered_segment(y, sr, gap_start, gap_end, buffer_before=2.0, buffe
     return segment, sr
 
 def get_audio_duration(path):
+    """
+    Trim a segment from an audio or video file using ffmpeg.
+
+    The function copies the segment between start_time and end_time from input_path
+    to output_path without re-encoding, preserving quality and speeding up processing.
+
+    Parameters:
+        input_path (str): Path to the input media file.
+        output_path (str): Path where the trimmed output will be saved.
+        start_time (str or float): Start time of the trim segment (e.g., "00:01:23" or seconds).
+        end_time (str or float): End time of the trim segment.
+
+    Raises:
+        subprocess.CalledProcessError: If the ffmpeg command fails.
+    """
     base_dir = os.path.dirname(__file__)
     ffprobe_path = os.path.join(base_dir, ".." ,"third_party", "ffmpeg", "win64", "ffprobe.exe")
     result = subprocess.run(
@@ -155,6 +172,15 @@ def trim_audio_ffmpeg(input_path, output_path, start_time, end_time):
     subprocess.run(cmd, check=True)
 
 def get_ffmpeg_path():
+    """
+    Get the full path to the ffmpeg executable bundled in the project.
+
+    The function constructs the path relative to the current file location,
+    assuming ffmpeg is included under a third_party directory.
+
+    Returns:
+        str: Full path to the ffmpeg executable.
+    """
     base_dir = os.path.dirname(__file__)
     # Adjust path to where you bundle ffmpeg inside your repo
     ffmpeg_path = os.path.join(base_dir, ".." ,"third_party", "ffmpeg", "win64", "ffmpeg.exe")
@@ -162,6 +188,14 @@ def get_ffmpeg_path():
     return ffmpeg_path
 
 def test_ffmpeg():
+    """
+    Test if the bundled ffmpeg executable can be run successfully.
+
+    Attempts to run `ffmpeg -version` to verify availability and functionality.
+
+    Returns:
+        bool: True if ffmpeg runs successfully, False otherwise.
+    """
     ffmpeg_path = get_ffmpeg_path()
     try:
         result = subprocess.run(

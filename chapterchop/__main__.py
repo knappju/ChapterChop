@@ -58,7 +58,7 @@ def main():
     args = parser.parse_args()
     validate_args(args)
 
-    #result = process_audio_file(audio_file)
+    result = process_audio_file(audio_path=args.InputFile[0], output_folder=args.OutputDirectory, silence_threshold=args.SilenceThreshold, min_gap_sec=args.SilenceGap) #currently only taking in the first input file argument.
 
 if __name__ == "__main__":
     main()
