@@ -1,5 +1,6 @@
 import whisper
 import numpy as np
+import re
 
 # Load the Whisper model once, globally
 model = whisper.load_model("medium")  # You can change to "small", "medium", etc. if needed
@@ -66,3 +67,26 @@ def _get_avg_confidence(segments):
         return 0.0
     probs = [np.exp(lp) for lp in logprobs]
     return float(np.mean(probs))
+
+def extract_chapter_number(text: str) -> int | None:
+    """
+    Extracts the chapter number from a block of text.
+    
+    Supports formats like:
+        - "Chapter 3"
+        - "chapter: 10"
+        - "Chapter - 25"
+    
+    Args:
+        text (str): The input text to search.
+
+    Returns:
+        int | None: The chapter number if found, otherwise None.
+    """
+    pattern = r'chapter\s*[:\-]?\s*(\d+)'  # Case-insensitive match
+    match = re.search(pattern, text, re.IGNORECASE)
+    
+    if match:
+        return int(match.group(1))
+    
+    return None
