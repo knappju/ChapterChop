@@ -83,8 +83,8 @@ def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, m
     for i, segment in enumerate(filtered_segments):
         #create metadata list here        
         metadata = [
-            '-metadata', f'start_time={seconds_to_timestamp(start_time)}',
-            '-metadata', f'end_time={seconds_to_timestamp(end_time)}',
+            '-metadata', f'start_time={seconds_to_timestamp(segment['gap_start'])}',
+            '-metadata', f'end_time={seconds_to_timestamp(segment['gap_end'])}',
             '-metadata', f'Chapter={transcription.extract_chapter_number(segment['transcript'])}'
         ]
         
