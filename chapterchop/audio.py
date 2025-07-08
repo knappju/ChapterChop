@@ -159,7 +159,6 @@ def get_ffmpeg_path():
     base_dir = os.path.dirname(__file__)
     # Adjust path to where you bundle ffmpeg inside your repo
     ffmpeg_path = os.path.join(base_dir, ".." ,"third_party", "ffmpeg", "win64", "ffmpeg.exe")
-    print(f"{ffmpeg_path}")
     return ffmpeg_path
 
 def test_ffmpeg():

@@ -81,11 +81,18 @@ def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, m
     total_segments = len(filtered_segments)
 
     for i, segment in enumerate(filtered_segments):
+        #create metadata list here        
+        metadata = [
+            '-metadata', f'start_time={seconds_to_timestamp(start_time)}',
+            '-metadata', f'end_time={seconds_to_timestamp(end_time)}',
+            '-metadata', f'Chapter={transcription.extract_chapter_number(segment['transcript'])}'
+        ]
+        
         if i == 0:
             start_time = 0
             end_time = segment["gap_start"] + 1.0
             output_path = os.path.join(output_folder, f"{i+9}.mp3")
-            audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time))
+            audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time), metadata)
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0
         elif i == total_segments - 1:
@@ -94,13 +101,6 @@ def process_audio_file(audio_path, output_folder=None, silence_threshold=0.05, m
         else:
             start_time = segment["gap_end"] - 1.0
             end_time = filtered_segments[i + 1]["gap_start"] + 1.0
-
-        #create metadata list here
-        metadata = [
-            '-metadata', f'start_time={seconds_to_timestamp(start_time)}',
-            '-metadata', f'end_time={seconds_to_timestamp(end_time)}',
-            '-metadata', f'Chapter={transcription.extract_chapter_number(segment['transcript'])}'
-        ]
 
         output_path = os.path.join(output_folder, f"{i+10}.mp3")
         audio.trim_audio_ffmpeg(audio_path, output_path, seconds_to_timestamp(start_time), seconds_to_timestamp(end_time), metadata)
